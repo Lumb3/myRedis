@@ -1,0 +1,1 @@
+Welcome to ***myRedis***, a fast server that provides a fast communication with the user.
