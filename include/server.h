@@ -1,8 +1,16 @@
-//
-// Created by Erkhembileg Ariunbold on 2025.09.19.
-//
+#ifndef REDIS_SERVER_H
+#define REDIS_SERVER_H
+#include <atomic>
+#include <string>
 
-#ifndef MYREDIS_SERVER_H
-#define MYREDIS_SERVER_H
-
-#endif //MYREDIS_SERVER_H
+class Server {
+public:
+    Server(int port);
+    void run();
+    void stop();
+private:
+    int port;
+    int serverSocket;
+    std::atomic<bool> running;
+};
+#endif
