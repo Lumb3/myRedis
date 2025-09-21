@@ -1,10 +1,12 @@
 #include "/Users/erkhembilegariunbold/CLionProjects/myRedis/include/server.h"
 
+#include <fstream>
 #include <iostream>
 #include <ostream>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <netinet/in.h>
+
 
 static Server* globalServer = nullptr;
 
@@ -19,7 +21,7 @@ void Server::run() {  // different hosts, TCP, protocol
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);  // creating a TCP connection socket
     if (serverSocket < 0) {
         std::cerr << "Error creating socket" << std::endl;
-        return;
+        exit(1);
     }
     int option = 1;
     setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
@@ -33,7 +35,7 @@ void Server::run() {  // different hosts, TCP, protocol
     }
     if (listen(serverSocket, 10) < 0) {
         std::cout << "Error in listening on server socket" << std::endl;
-        return;
+        exit(1);
     } else {
         std::cout << "Listening on port " << this->port << std::endl;
     }
@@ -46,4 +48,17 @@ void Server::stop() {
         close(serverSocket);  // closes the listening socket
     }
     std::cout << "Server stopped" << std::endl;
+}
+
+// dump database
+void Server::dumpDatabase() {
+    std::ofstream out("dump.rbd", std::ios::trunc);
+    if (!out.is_open()) {
+        std::cerr << "Error opening dump file" <<std::endl;
+        exit(1);
+    }
+    out << "Dumping database at port " << this->port << std::endl;
+
+    out.close();
+    std::cout << "Database dumped to dump.rdb" << std::endl;
 }

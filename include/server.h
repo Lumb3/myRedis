@@ -8,6 +8,7 @@ public:
     Server(int port);
     void run();
     void stop();
+    void dumpDatabase();
 private:
     int port;
     int serverSocket;
