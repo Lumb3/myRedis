@@ -3,7 +3,7 @@ project(myRedis)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(myRedis main.cpp
+add_executable(myRedis src/main.cpp
         include/server.h
         src/server.cpp
         include/parsing.h
@@ -11,4 +11,5 @@ add_executable(myRedis main.cpp
         tests/tserver.cpp
         tests/tparsing.cpp
         include/command_handler.h
-        src/command_handler.cpp)
+        src/command_handler.cpp
+        src/myredis_cli.cpp)

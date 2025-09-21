@@ -3,51 +3,60 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <algorithm>
 
-// *2\r\n$5\r\nhello\r\n$5\r\nworld\r\n
-// *2 means an array with 2 elements
-// $5 length
-// hello -> token1
-// world -> token2
-
-std::vector<std::string> parseRespCommand(const std::string &input) {
+// Parse RESP input into tokens
+std::vector<std::string> CommandHandler::parseRespCommand(const std::string &input) {
     std::vector<std::string> tokens;
-    if (input.empty())
-        return tokens; // return empty tokens vector
+    if (input.empty()) return tokens;
+
     if (input[0] != '*') {
-       std::istringstream ss (input);
+        // Fallback: space-separated command
+        std::istringstream ss(input);
         std::string token;
         while (ss >> token) {
             tokens.emplace_back(token);
         }
         return tokens;
     }
-    size_t position = 0;
-    if (input[position] == '*') {
-        ++position;
-        size_t count = std::stoul(input.substr(position, input.find("\r\n", position) - position));
-        position = input.find("\r\n", position) + 2;
 
-        for (size_t i = 0; i < count; i++) {
-            if (input[position] != '$') break;
-            ++position;
-            size_t len = std::stoul(input.substr (position, input.find("\r\n", position) - position));
-            position = input.find("\r\n", position) + 2;
-            std::string element = input.substr (position, len);
-            tokens.emplace_back(element);
-            position += len + 2; // skip \r\n string
-        }
+    size_t position = 1; // skip '*'
+    size_t countEnd = input.find("\r\n", position);
+    if (countEnd == std::string::npos) return tokens;
+
+    size_t count = std::stoul(input.substr(position, countEnd - position));
+    position = countEnd + 2;
+
+    for (size_t i = 0; i < count; i++) {
+        if (input[position] != '$') break;
+        ++position;
+
+        size_t lenEnd = input.find("\r\n", position);
+        if (lenEnd == std::string::npos) break;
+
+        size_t len = std::stoul(input.substr(position, lenEnd - position));
+        position = lenEnd + 2;
+
+        if (position + len > input.size()) break; // malformed input
+
+        std::string element = input.substr(position, len);
+        tokens.emplace_back(element);
+
+        position += len + 2; // skip data + \r\n
     }
+
     return tokens;
 }
-CommandHandler:: CommandHandler() {}
+
+CommandHandler::CommandHandler() = default;
 
 std::string CommandHandler::process(const std::string &commandLine) {
     auto tokens = parseRespCommand(commandLine);
     if (tokens.empty()) return "-Error: Empty command\r\n";
 
     std::string command = tokens[0];
-    std::ranges::transform(command, command.begin(), ::toupper);
+    std::transform(command.begin(), command.end(), command.begin(),
+                   [](unsigned char c){ return std::toupper(c); });
 
     std::ostringstream response;
 
@@ -58,7 +67,7 @@ std::string CommandHandler::process(const std::string &commandLine) {
         if (tokens.size() < 2) {
             response << "-Error: ECHO requires an argument\r\n";
         } else {
-            response << "+" << tokens[1] << "\r\n";
+            response << "$" << tokens[1].size() << "\r\n" << tokens[1] << "\r\n";
         }
     }
     else if (command == "SET") {
@@ -76,8 +85,9 @@ std::string CommandHandler::process(const std::string &commandLine) {
             response << "-Error: GET requires key\r\n";
         } else {
             std::string key = tokens[1];
-            if (db.find(key) != db.end()) {
-                response << "$" << db[key].size() << "\r\n" << db[key] << "\r\n";
+            auto it = db.find(key);
+            if (it != db.end()) {
+                response << "$" << it->second.size() << "\r\n" << it->second << "\r\n";
             } else {
                 response << "$-1\r\n"; // key not found
             }
@@ -90,3 +100,4 @@ std::string CommandHandler::process(const std::string &commandLine) {
     return response.str();
 }
 
+CommandHandler::~CommandHandler() = default;

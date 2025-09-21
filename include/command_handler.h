@@ -8,6 +8,7 @@ public:
     CommandHandler();
     std::vector<std::string> parseRespCommand(const std::string& input);
      std::string process (const std::string& commandLine);
+    ~CommandHandler();
 private:
     std::unordered_map<std::string, std::string> db; // in-memory key-value store
 };

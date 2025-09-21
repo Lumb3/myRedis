@@ -9,6 +9,7 @@ public:
     void run();
     void stop();
     void dumpDatabase();
+    ~Server();
 private:
     int port;
     int serverSocket;
