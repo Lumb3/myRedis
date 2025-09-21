@@ -31,7 +31,7 @@ void Server::run() {
     int option = 1;
     setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 
-    sockaddr_in serverAddr{};
+    sockaddr_in serverAddr{}; // structure for IPv4 socket address
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(port);
     serverAddr.sin_addr.s_addr = INADDR_ANY;

@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
         port = std::stoi(argv[1]);
     }
 
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    int sock = socket(AF_INET, SOCK_STREAM, 0); // Creates a new socket
     if (sock < 0) {
         perror("Socket creation failed");
         return 1;
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
         std::istringstream iss(line);
         std::vector<std::string> tokens;
         std::string token;
-        while (iss >> token) tokens.push_back(token);
+        while (iss >> token) tokens.emplace_back(token);
 
         if (tokens.empty()) continue;
 
